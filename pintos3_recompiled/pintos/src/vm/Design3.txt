@@ -22,6 +22,8 @@ Mark Spicer
 >> text, lecture notes, and course staff.
 
 https://github.com/ChristianJHughes/pintos-project3/
+http://people.cs.ksu.edu/~bstinson/courses/cis520/grandepintos.proj3
+http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
 
 
 			PAGE TABLE MANAGEMENT

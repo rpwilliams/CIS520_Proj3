@@ -37,21 +37,22 @@ page_exit (void)
    or a null pointer if no such page exists.
    Allocates stack pages as necessary. */
 static struct page *
-page_for_addr (const void *address) 
+page_for_addr (const void *fault_address) 
 {
-  if (address < PHYS_BASE) 
+  if (fault_address < PHYS_BASE) 
     {
       struct page p;
       struct hash_elem *e;
 
       /* Find existing page. */
-      p.addr = (void *) pg_round_down (address);
+      p.addr = (void *) pg_round_down (fault_address);
       e = hash_find (thread_current ()->pages, &p.hash_elem);
       if (e != NULL)
         return hash_entry (e, struct page, hash_elem);
 
-      /* Check if the user virtual address (p.addr) */
-      if((p.addr > PHYS_BASE - STACK_MAX) && ((void*) thread_current()->user_esp - 32 < address)) {
+      /* Grow the stack if the existing page address exceeds the size of the stack,
+         and don't consider faulted addresses less than esp - 32  */
+      if((p.addr > PHYS_BASE - STACK_MAX) && ((void*) thread_current()->user_esp - 32 < fault_address)) {
       	return page_allocate(p.addr, false);
       }
       	
@@ -145,16 +146,38 @@ page_out (struct page *p)
      process to fault.  This must happen before checking the
      dirty bit, to prevent a race with the process dirtying the
      page. */
+  pagedir_clear_page (p->thread->pagedir, (void*) p->addr);
 
-/* add code here */
+  /* Checks if virtual page has been changed from the cached page. If it has,
+  	 then it is dirty! */
+  dirty = pagedir_is_dirty(p->thread->pagedir, ((const void*) p->addr));
+  
+  /* If it is not dirty, the page has not been modified, 
+     so we dont need to swap yet */
+  if(!dirty) {
+    ok = true;
+  }
 
-  /* Has the frame been modified? */
+  /* If the file is not present, we want to swap it out (b/c it would cause a page fault)*/
+  if(p->file == NULL) {
+  	ok = swap_out(p);
+  }
+  /* If the file is present AND it is dirty, we want to swap out*/
+  else if(dirty == true){
+  	/* If private is true, it means we should swap it. If private is false,
+  	   we need to write it to a file instead */
+  	if(p->private) {
+  		ok = swap_out(p);
+  	}
+  	else {
+  		ok = file_write_at(p->file, (const void *) p->frame->base, p->file_bytes, p->file_offset);  	
+  	}
+  }
 
-/* add code here */
-
-  /* Write frame contents to disk if necessary. */
-
-/* add code here */
+  /* We successfully swapped the information out, so we're done with the frame */
+  if(ok) {
+  	p->frame = NULL;
+  }
 
   return ok;
 }

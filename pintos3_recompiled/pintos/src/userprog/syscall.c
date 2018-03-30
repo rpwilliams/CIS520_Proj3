@@ -504,7 +504,20 @@ lookup_mapping (int handle)
 static void
 unmap (struct mapping *m) 
 {
-/* add code here */
+  /* Remove the m from the list */
+  list_remove(&m->elem);
+
+  for(int i = 0; i < m->page_cnt; i++) {
+    if(pagedir_is_dirty(thread_current()->pagedir, ((const void*) ((m->base) + (PGSIZE * i))))) {
+      file_write_at(m->file, (const void *) (m->base + (PGSIZE * i)), (PGSIZE*(m->page_cnt)), (PGSIZE*i));
+    }
+  }
+
+  /* Deallocate all the memory mapped pages  */
+  for(int i = 0; i < m->page_cnt; i++) {
+    page_deallocate((void*) ((m->base) + (PGSIZE * i)));
+  }
+
 }
  
 /* Mmap system call. */
@@ -560,8 +573,8 @@ sys_mmap (int handle, void *addr)
 static int
 sys_munmap (int mapping) 
 {
-/* add code here */
-
+  struct mapping *fm = lookup_mapping (mapping);
+  unmap(fm);
   return 0;
 }
  
