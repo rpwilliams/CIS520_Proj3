@@ -8,9 +8,9 @@
 
 >> Fill in the names of your group members.
 
-Ryan Williams
-Matt Hixon
-Mark Spicer
+	Ryan Williams
+	Matt Hixon
+	Mark Spicer
 
 ---- PRELIMINARIES ----
 
@@ -21,9 +21,9 @@ Mark Spicer
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course staff.
 
-https://github.com/ChristianJHughes/pintos-project3/
-http://people.cs.ksu.edu/~bstinson/courses/cis520/grandepintos.proj3
-http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
+	https://github.com/ChristianJHughes/pintos-project3/
+	http://people.cs.ksu.edu/~bstinson/courses/cis520/grandepintos.proj3
+	http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
 
 
 			PAGE TABLE MANAGEMENT
@@ -34,10 +34,27 @@ http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
 >> A1: In a few paragraphs, describe the existing code for locating the
 >> frame, if any, that contains the data of a given page.
 
+	Each frame is mapped to a given page with the "page" variable, which is a pointer to the page associated
+	with the frame. Additionally, each frame contains a pointer to its data with the "base" variable,
+	which is a pointer that points to the data via a kernel virtual base address.
+
+	In the try_frame_alloc_and_lock function in frame.c, a frame that
+	does not contain a mapping to an existing page is searched for in the array of frames.
+	If a free frame is found (which is indicated by a frame's "page" variable being NULL), that frame's page
+	is assigned to the to the page passed in. If a free frame is not found (which is indicated by no frame in the frame array having a page set to null), then a frame from the frame array must be evicted, which is described in further detail in question B1. 
+
+	If a page to frame mapping cannot be created even after an attempt at a frame eviction, try_frame_alloc_and_alloc
+	is attempted a total of 3 times in frame_alloc_and_lock.
+
+
 ---- SYNCHRONIZATION ----
 
 >> A2: When two user processes both need a new frame at the same time,
 >> how are races avoided?
+
+	Races are avoided with a lock given to each frame. Before assigning f->page to 
+	the page passed into try_frame_alloc_and_lock, the lock is acquired, and
+	f->page = page becomes part of the critical section, which ensures synchronization.
 
 		       PAGING TO AND FROM DISK
 		       =======================
@@ -47,9 +64,12 @@ http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
 >> B1: When a frame is required but none is free, some frame must be
 >> evicted.  Describe the algorithm used to choose a frame to evict.
 
+
 >> B2: Explain your heuristic for deciding whether a page fault for an
 >> invalid virtual address should cause the stack to be extended into
 >> the page that faulted.
+
+	
 
 			 MEMORY MAPPED FILES
 			 ===================
