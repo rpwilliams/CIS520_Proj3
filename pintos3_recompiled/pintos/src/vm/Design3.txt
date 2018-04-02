@@ -65,9 +65,20 @@
 >> evicted.  Describe the algorithm used to choose a frame to evict.
 
 
+
 >> B2: Explain your heuristic for deciding whether a page fault for an
 >> invalid virtual address should cause the stack to be extended into
 >> the page that faulted.
+
+	First, we check if a user program exceeds the size of the stack when a
+	page fault occurs. We get the stack's size by getting the difference of 
+	PHYS_BASE and STACK_MAX, since the stack grows downward from PHYS_BASE. If
+	the size is exceeded, we grow the stack by allocating a new page with page_allocate.
+
+	Additionally, before growing the stack, we ensure that 
+	the user stack pointer is "right below" the stack.
+	We do this by ensuring the fault address is within 32 bytes of the stack pointer,
+	since the PUSHA instruction pushes 32 bytes at once.
 
 	
 
