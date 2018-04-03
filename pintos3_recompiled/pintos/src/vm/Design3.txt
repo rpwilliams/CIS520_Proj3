@@ -24,6 +24,8 @@
 	https://github.com/ChristianJHughes/pintos-project3/
 	http://people.cs.ksu.edu/~bstinson/courses/cis520/grandepintos.proj3
 	http://courses.cs.vt.edu/~cs3204/fall2009/pintos-vt-local/Project3Session.pdf
+	https://en.wikipedia.org/wiki/Page_replacement_algorithm#Least_recently_used
+	http://www.informit.com/articles/article.aspx?p=25260&seqNum=7
 
 
 			PAGE TABLE MANAGEMENT
@@ -64,6 +66,18 @@
 >> B1: When a frame is required but none is free, some frame must be
 >> evicted.  Describe the algorithm used to choose a frame to evict.
 
+	The LRU algorithm is used to evict a frame in try_frame_alloc_and_lock if 
+	there are no free frames available. We iterate through the list of frames 
+	twice, and we do so by using "hand" to keep track of our position in the
+	list.
+
+	For each frame, we check if the page was accessed recently. If it was,
+	that means it has been used recently, so we should continue searching for the
+	least recently used frame. If the frame was *not* accessed recently, we have
+	found the frame to evict, and we evict it by calling page_out. If we are unable
+	to evict the frame with page_out, we return NULL to indicate we were unsuccesful. 
+	If we are succesful, f->page becomes available, and is set to the page passed in,
+	making it so the page is finally mapped to a frame.
 
 
 >> B2: Explain your heuristic for deciding whether a page fault for an
