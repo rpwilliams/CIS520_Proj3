@@ -52,7 +52,7 @@ page_for_addr (const void *fault_address)
 
       /* Grow the stack if the existing page address exceeds the size of the stack,
          and don't consider faulted addresses less than esp - 32  */
-      if((p.addr > PHYS_BASE - STACK_MAX) && ((void*) thread_current()->user_esp - 32 < fault_address)) {
+      if((fault_address > PHYS_BASE - STACK_MAX) && ((void*) thread_current()->user_esp - 32 < fault_address)) {
       	return page_allocate(p.addr, false);
       }
       	
