@@ -132,7 +132,8 @@ page_in (void *fault_addr)
 
 /* Evicts page P.
    P must have a locked frame.
-   Return true if successful, false on failure. */
+   Return true if successful, false on failure.
+ */
 bool
 page_out (struct page *p) 
 {
@@ -151,19 +152,13 @@ page_out (struct page *p)
   /* Checks if virtual page has been changed from the cached page. If it has,
   	 then it is dirty! */
   dirty = pagedir_is_dirty(p->thread->pagedir, ((const void*) p->addr));
-  
-  /* If it is not dirty, the page has not been modified, 
-     so we dont need to swap yet */
-  if(!dirty) {
-    ok = true;
-  }
 
   /* If the file is not present, we want to swap it out (b/c it would cause a page fault)*/
   if(p->file == NULL) {
   	ok = swap_out(p);
   }
   /* If the file is present AND it is dirty, we want to swap out*/
-  else if(dirty == true){
+  else if(dirty){
   	/* If private is true, it means we should swap it. If private is false,
   	   we need to write it to a file instead */
   	if(p->private) {
@@ -172,6 +167,11 @@ page_out (struct page *p)
   	else {
   		ok = file_write_at(p->file, (const void *) p->frame->base, p->file_bytes, p->file_offset);  	
   	}
+  }
+  /* If it is not dirty, the page has not been modified, 
+     so we dont need to swap  */
+  else if(!dirty) {
+    ok = true;
   }
 
   /* We successfully swapped the information out, so we're done with the frame */

@@ -31,7 +31,7 @@ static int sys_seek (int handle, unsigned position);
 static int sys_tell (int handle);
 static int sys_close (int handle);
 static int sys_mmap (int handle, void *addr);
-static int sys_munmap (int mapping);
+static int sys_munmap (int handle);
  
 static void syscall_handler (struct intr_frame *);
 static void copy_in (void *, const void *, size_t);
@@ -507,13 +507,15 @@ unmap (struct mapping *m)
   /* Remove the m from the list */
   list_remove(&m->elem);
 
+  /* Only write back the pages that have been changed */
   for(int i = 0; i < m->page_cnt; i++) {
     if(pagedir_is_dirty(thread_current()->pagedir, ((const void*) ((m->base) + (PGSIZE * i))))) {
       file_write_at(m->file, (const void *) (m->base + (PGSIZE * i)), (PGSIZE*(m->page_cnt)), (PGSIZE*i));
     }
   }
 
-  /* Deallocate all the memory mapped pages  */
+  /* Now that we've written back the pages we need, we can 
+     remove the pages from the process's list of virtual pages */
   for(int i = 0; i < m->page_cnt; i++) {
     page_deallocate((void*) ((m->base) + (PGSIZE * i)));
   }
@@ -571,9 +573,11 @@ sys_mmap (int handle, void *addr)
 
 /* Munmap system call. */
 static int
-sys_munmap (int mapping) 
+sys_munmap (int handle) 
 {
-  struct mapping *fm = lookup_mapping (mapping);
+  /* Look up the mapping with the given handler */
+  struct mapping *fm = lookup_mapping (handle);
+  /* Unmap mapping fm */
   unmap(fm);
   return 0;
 }
