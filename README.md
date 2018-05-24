@@ -1,6 +1,6 @@
 # Project 3: Virtual Memory
 
-(Pintos Project 3)[https://web.stanford.edu/class/cs140/projects/pintos/pintos_4.html] for the Spring 2018 Operating Systems course
+[Pintos Project 3](https://web.stanford.edu/class/cs140/projects/pintos/pintos_4.html) for the Spring 2018 Operating Systems course
 at Kansas State University. More info can be found in 'Design3.txt'.
 
 ## Authors
